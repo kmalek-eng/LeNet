@@ -2,6 +2,8 @@
 
 This folder contains a U-Net based crack segmentation pipeline.
 
+Run all commands from inside Training/Crack_Segmentation so the relative paths work correctly.
+
 ## Files
 
 main.py: trains the U-Net model using paired crack images and masks.
