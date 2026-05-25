@@ -1,53 +1,130 @@
-LeNetAR: Deploying LeNet Model on AR Headsets
-This Unity project deploys the LeNet model, trained on the MNIST dataset, to AR headsets.
+# LeNetAR: Deep Learning Training and Deployment on AR Headsets
 
+This repository contains deep learning models, training pipelines, and deployment examples developed for Microsoft HoloLens augmented reality headsets.
 
-Overview
-LeNetAR leverages the power of augmented reality to bring neural networks into the physical world using the HoloLens. The project is developed using C# within the UnityEngine environment and deployed via the Universal Windows Platform (UWP).
+The repository demonstrates the complete workflow from model training in Python to deployment in Unity using C#.
 
+## Overview
 
-Features
-LeNet Model: Utilizes a trained LeNet model on the MNIST dataset for digit recognition.
-AR Integration: Seamlessly integrates with HoloLens for an immersive AR experience.
-Unity Development: Developed in Unity with C# for robust performance and versatility.
-Requirements
-Unity: Version 2019.4.40f1 
-HoloLens: Microsoft HoloLens or HoloLens 2
-Windows: Universal Windows Platform (UWP) SDK
+The project was originally developed to deploy a LeNet-5 model trained on the MNIST dataset to AR headsets. The repository has since been expanded to include crack classification and crack segmentation models following the same deployment workflow.
 
+The general process is:
 
-Setup
-Clone the Repository:
-git clone https://github.com/KaMa85/LeNet
-cd LeNetAR
-Open in Unity:
-Launch Unity Hub.
-Click on "Add" and select the LeNetAR project directory.
-Build and Deploy:
-Set the build target to UWP.
-Build and deploy to your HoloLens device.
+1. Train and evaluate the model in Python.
+2. Export trained weights to a C#-compatible format.
+3. Integrate the exported weights into a Unity project.
+4. Deploy the application to Microsoft HoloLens using UWP.
 
+## Repository Structure
 
-Usage
-Once deployed, the application will:
-Recognize handwritten digits through the AR headset.
-Display the recognition results in real-time within the AR environment.
+### Training
 
+Contains Python implementations for model training, evaluation, and weight export.
 
-Citation
-If you use this code, please cite the author:
+#### LeNet_MNIST_Training
+
+LeNet-5 implementation for handwritten digit classification using the MNIST dataset.
+
+Includes:
+
+- Training and testing
+- Accuracy evaluation
+- Confusion matrix and ROC analysis
+- Export of trained weights to C#
+- Export of sample images for verification in Unity
+
+#### Crack_Detection_Training
+
+Binary crack classification models based on the ImmerseNet architecture.
+
+Includes:
+
+- Dataset preprocessing
+- Model training and evaluation
+- Weight export to C#
+- A lightweight 32×32 implementation for faster development and deployment
+- A larger 227×227 implementation for higher-capacity training
+
+#### Crack_Segmentation
+
+U-Net based crack segmentation framework.
+
+Includes:
+
+- Training using image-mask pairs
+- Cross-validation
+- Model evaluation
+- Segmentation result generation
+- Checkpoint generation
+- Conversion of trained weights into a C#-Unity compatible format for AR deployment
+
+Each training folder contains its own README describing dataset structure, execution steps, and generated outputs.
+
+### LeNetAR
+
+Unity implementation of the LeNet-5 MNIST classifier for Microsoft HoloLens and HoloLens 2.
+
+The project is developed using:
+
+- Unity
+- C#
+- UnityEngine
+- Universal Windows Platform (UWP)
+
+The same deployment approach can be applied to the crack classification and crack segmentation models after exporting their trained weights to C# format.
+
+## Requirements
+
+### Training
+
+- Python 3
+- PyTorch
+- NumPy
+- scikit-learn
+- OpenCV
+- Pillow
+
+### Deployment
+
+- Unity 2019.4.40f1
+- Microsoft HoloLens or HoloLens 2
+- Windows UWP SDK
+
+## Setup
+
+Clone the repository:
+
+```bash
+git clone https://github.com/KaMa85/LeNet.git
+cd LeNet
+```
+
+Refer to the README inside each training folder for dataset requirements and execution instructions.
+
+To open the AR application:
+
+1. Launch Unity Hub.
+2. Add the LeNetAR project.
+3. Open the project in Unity.
+4. Set the build target to UWP.
+5. Build and deploy to HoloLens.
+
+## Citation
+
+If you use this code, please cite:
+
 Kaveh Malek
 
+## License
 
-License
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License.
 
+## Acknowledgments
 
-Acknowledgments
-Unity: Unity3D
-Microsoft HoloLens: HoloLens
-MNIST Dataset: MNIST
-Amr Kassaem for enabling built-in voice recognition commands
+- Unity Technologies
+- Microsoft HoloLens
+- MNIST Dataset
+- Amr Kassaem for enabling built-in voice recognition commands
 
 
 
