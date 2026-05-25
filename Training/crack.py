@@ -15,6 +15,8 @@ import os
 import cv2
 import random
 from torch.utils.data import Dataset, DataLoader
+from pathlib import Path
+
 
 
 # CLASSES AND FUNCTIONS
@@ -91,16 +93,37 @@ def format_weights(tensor, digits=4):
 
 
 # DATA
-# Load and preprocess positive images
-positive_images = load_images_from_folder(
-    r'C:\!\Dessertation\Technical\AI\after_last\ImmerseNet\cracks\32_32\Positive')
+# Expected dataset structure:
+# data/cracks_32x32/
+# ├── Positive/   # crack images
+# └── Negative/   # non-crack images
+#
+# The dataset is not included in this repository. Download it separately
+# and place the 32x32 images in the folders above before running this script.
+
+BASE_DIR = Path(__file__).resolve().parent
+DATASET_DIR = BASE_DIR / "data" / "cracks_32x32"
+POSITIVE_DIR = DATASET_DIR / "Positive"
+NEGATIVE_DIR = DATASET_DIR / "Negative"
+OUTPUT_DIR = BASE_DIR / "outputs"
+OUTPUT_DIR.mkdir(exist_ok=True)
+
+if not POSITIVE_DIR.exists() or not NEGATIVE_DIR.exists():
+    raise FileNotFoundError(
+        f"Dataset not found.\n"
+        f"Expected folders:\n"
+        f"  {POSITIVE_DIR}\n"
+        f"  {NEGATIVE_DIR}"
+    )
+
+positive_images = load_images_from_folder(POSITIVE_DIR)
+
 pos_greys = [0.299/255 * positive_images[i][:, :, 0] + 0.587/255 * positive_images[i][:, :, 1] + 0.114/255 * positive_images[i][:, :, 2]
              for i in range(len(positive_images))]
 pos_greys_tensors = [torch.reshape(torch.tensor(image), (1, 32, 32)) for image in pos_greys]
 pos_labels = torch.ones(len(pos_greys_tensors))
 # Load and preprocess negative images
-negative_images = load_images_from_folder(
-    r'C:\!\Dessertation\Technical\AI\after_last\ImmerseNet\cracks\32_32\Negative')
+negative_images = load_images_from_folder(NEGATIVE_DIR)
 neg_greys = [0.299/255 * negative_images[i][:, :, 0] + 0.587/255 * negative_images[i][:, :, 1] + 0.114/255 * negative_images[i][:, :, 2]
              for i in range(len(negative_images))]
 neg_greys_tensors = [torch.reshape(torch.tensor(image), (1, 32, 32)) for image in neg_greys]
@@ -137,7 +160,7 @@ eval_loader = DataLoader(eval_dataset, batch_size=batch_size, shuffle=False)
 
 # TRAINING
 # Write hyperparameters to a file
-with open('hyperparameters.txt', 'w') as f:
+with open(OUTPUT_DIR / "hyperparameters.txt", "w") as f:
     f.write(f'Batch size: {batch_size}\n')
     f.write(f'Learning rate: {learning_rate}\n')
     f.write(f'Number of epochs: {num_epochs}\n')
@@ -152,7 +175,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
 print(f'Total number of learnable parameters: {total_params}')
 # Write total number of parameters to a file
-with open('total_parameters.txt', 'w') as f:
+with open(OUTPUT_DIR / "total_parameters.txt", "w") as f:
     f.write(f'Total number of learnable parameters: {total_params}\n')
 
 # Train the model
@@ -207,7 +230,7 @@ for epoch in range(num_epochs):
     # Save the model weights if validation loss is the best
     if avg_ep_val_loss < best_loss:
         best_loss = avg_ep_val_loss
-        torch.save(model.state_dict(), 'ImmerseNet0_weights.pth')
+        torch.save(model.state_dict(), OUTPUT_DIR / "ImmerseNet0_weights.pth")
         print('Model saved with validation loss: %.3f' % best_loss)
 
 
@@ -289,7 +312,7 @@ csharp_code += """
 }
 """
 # Save the C# script to a file
-with open('ImmerseNet0Weights.cs', 'w') as f:
+with open(OUTPUT_DIR / "ImmerseNet0Weights.cs", "w") as f:
     f.write(csharp_code)
 
 
