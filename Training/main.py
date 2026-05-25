@@ -11,6 +11,10 @@ from sklearn.preprocessing import label_binarize
 import matplotlib.pyplot as plt
 from itertools import cycle
 import numpy as np
+import os
+
+OUTPUT_DIR = "outputs"
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 
 # Define the LeNet-5 model
@@ -45,6 +49,7 @@ class LeNet5(nn.Module):
         # Output layer
         return x
 
+
 # Hyperparameters
 batch_size = 32
 learning_rate = 0.001
@@ -62,7 +67,7 @@ print(f'Pooling kernel size: {pooling_kernel_size}')
 print(f'Pooling stride: {pooling_stride}')
 
 # Write hyperparameters to a file
-with open('hyperparameters.txt', 'w') as f:
+with open(os.path.join(OUTPUT_DIR, 'hyperparameters.txt'), 'w') as f:
     f.write(f'Batch size: {batch_size}\n')
     f.write(f'Learning rate: {learning_rate}\n')
     f.write(f'Number of epochs: {num_epochs}\n')
@@ -71,7 +76,7 @@ with open('hyperparameters.txt', 'w') as f:
 
 # Define the transform to convert the data to tensor and pad to 32x32
 transform = transforms.Compose([
-    transforms.Pad(2),  # Add 2 pixels of padding to each side of the 28x28 image to make it 32x32
+    transforms.Pad(2),
     transforms.ToTensor()
 ])
 
@@ -86,7 +91,6 @@ train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size,
 test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
 
-# Display 5 images from the training dataset
 # Function to show an image
 def show_image(img):
     img = img.squeeze()
@@ -95,33 +99,25 @@ def show_image(img):
 
 
 dataiter = iter(test_loader)
-images, labels = dataiter.next()
+images, labels = next(dataiter)
+
 for i in range(5):
-    image = images[i].numpy()  # Convert tensor to NumPy array
+    image = images[i].numpy()
     csharp_array = []
+
     for row in image:
         formatted_row = ' '.join(f'{float(value):.2f},' for value in row.flat)
         csharp_array.append(f"{{ {formatted_row} }}")
         print(formatted_row)
-    # show_image(image)
 
     # Create the C# array as a string
     csharp_array_str = "new float[,] {\n" + ",\n".join(csharp_array) + "\n};\n"
 
     # Save the C# array to a file
-    with open(f'image_{i}.cs', 'w') as file:
+    with open(os.path.join(OUTPUT_DIR, f'image_{i}.cs'), 'w') as file:
         file.write(f"float[,] image{i} = {csharp_array_str}")
 
-# for i in range(5):
-#     image = images[i].numpy()  # Convert tensor to NumPy array
-#     for row in image[0]:
-#         formatted_row = ' '.join(f'{float(value):.2f}' for value in row.flat)
-#         print(formatted_row)
-#     print()
-#     show_image(images[i])
-
-# Output message
-print("C# arrays saved to files.")
+print("C# arrays saved to outputs folder.")
 
 # Create the model
 model = LeNet5()
@@ -135,39 +131,33 @@ total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
 print(f'Total number of learnable parameters: {total_params}')
 
 # Write total number of parameters to a file
-with open('total_parameters.txt', 'w') as f:
+with open(os.path.join(OUTPUT_DIR, 'total_parameters.txt'), 'w') as f:
     f.write(f'Total number of learnable parameters: {total_params}\n')
 
 # Train the model
 for epoch in range(num_epochs):
     running_loss = 0.0
+
     for i, data in enumerate(train_loader, 0):
-        # Get the inputs and labels
         inputs, labels = data
 
-        # Zero the parameter gradients
         optimizer.zero_grad()
 
-        # Forward pass
         outputs = model(inputs)
-
-        # Calculate the loss
         loss = criterion(outputs, labels)
 
-        # Backward pass
         loss.backward()
-
-        # Update the parameters
         optimizer.step()
 
-        # Print statistics
         running_loss += loss.item()
-        if i % 2000 == 1999:    # print every 2000 mini-batches
+
+        if i % 2000 == 1999:
             print('[%d, %5d] loss: %.3f' % (epoch + 1, i + 1, running_loss / 2000))
             running_loss = 0.0
 
 # Save the model weights after training
-torch.save(model.state_dict(), 'lenet5_weights.pth')
+torch.save(model.state_dict(), os.path.join(OUTPUT_DIR, 'lenet5_weights.pth'))
+
 
 # Function to format the weights to 4 significant digits
 def format_weights(tensor, digits=4):
@@ -175,16 +165,17 @@ def format_weights(tensor, digits=4):
     formatted_tensor = np.round(tensor, digits)
     return formatted_tensor
 
+
 # Collect the model weights with 4 significant digits
 weights_dict = {}
+
 for name, param in model.named_parameters():
     formatted_param = format_weights(param)
     weights_dict[name] = formatted_param
 
 # Convert the weights dictionary to a pandas DataFrame and save to an Excel file
-with pd.ExcelWriter('model_weights.xlsx') as writer:
+with pd.ExcelWriter(os.path.join(OUTPUT_DIR, 'model_weights.xlsx')) as writer:
     for name, param in weights_dict.items():
-        # Handle different shapes of the parameters
         if param.ndim == 1:
             df = pd.DataFrame(param)
         elif param.ndim == 2:
@@ -193,8 +184,8 @@ with pd.ExcelWriter('model_weights.xlsx') as writer:
             df = pd.DataFrame(param.reshape(param.shape[0], -1))
         elif param.ndim == 4:
             df = pd.DataFrame(param.reshape(param.shape[0], -1))
-        df.to_excel(writer, sheet_name=name)
 
+        df.to_excel(writer, sheet_name=name)
 
 # Create the C# script to save the weights and biases as arrays
 csharp_code = """
@@ -270,17 +261,19 @@ csharp_code += """
 """
 
 # Save the C# script to a file
-with open('LeNet5Weights.cs', 'w') as f:
+with open(os.path.join(OUTPUT_DIR, 'LeNet5Weights.cs'), 'w') as f:
     f.write(csharp_code)
 
 # Test the model
 correct = 0
 total = 0
+
 with torch.no_grad():
     for data in test_loader:
         images, labels = data
         outputs = model(images)
         _, predicted = torch.max(outputs.data, 1)
+
         total += labels.size(0)
         correct += (predicted == labels).sum().item()
 
@@ -295,6 +288,7 @@ with torch.no_grad():
         images, labels = data
         outputs = model(images)
         _, predicted = torch.max(outputs.data, 1)
+
         all_labels.extend(labels.cpu().numpy())
         all_predictions.extend(predicted.cpu().numpy())
 
@@ -303,15 +297,14 @@ conf_matrix = confusion_matrix(all_labels[4000:5000], all_predictions[4000:5000]
 
 # Plot confusion matrix
 plt.figure(figsize=(10, 8))
-sns.set(font='Garamond', font_scale=1.5)  # Set font to Garamond and increase font scale
+sns.set(font='Garamond', font_scale=1.5)
 sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', cbar=False, annot_kws={"size": 20})
 plt.xlabel('Predicted', fontsize=22, fontname='Garamond')
 plt.ylabel('True', fontsize=22, fontname='Garamond')
 plt.title('Confusion Matrix', fontsize=24, fontname='Garamond')
 plt.show()
 
-
-# Assuming num_classes is the number of classes
+# Number of classes
 num_classes = 10
 
 # Binarize the labels for ROC curve
@@ -330,6 +323,7 @@ all_predictions_prob = np.array(all_predictions_prob)
 fpr = dict()
 tpr = dict()
 roc_auc = dict()
+
 for i in range(num_classes):
     fpr[i], tpr[i], _ = roc_curve(all_labels[:, i], all_predictions_prob[:, i])
     roc_auc[i] = auc(fpr[i], tpr[i])
@@ -337,10 +331,15 @@ for i in range(num_classes):
 # Plot ROC curve
 plt.figure(figsize=(10, 8))
 colors = cycle(['aqua', 'darkorange', 'cornflowerblue', 'red', 'green', 'blue', 'purple', 'brown', 'pink', 'grey'])
+
 for i, color in zip(range(num_classes), colors):
-    plt.plot(fpr[i], tpr[i], color=color, lw=2,
-             label='ROC curve of class {0} (area = {1:0.2f})'
-             ''.format(i, roc_auc[i]))
+    plt.plot(
+        fpr[i],
+        tpr[i],
+        color=color,
+        lw=2,
+        label='ROC curve of class {0} (area = {1:0.2f})'.format(i, roc_auc[i])
+    )
 
 plt.plot([0, 1], [0, 1], 'k--', lw=2)
 plt.xlim([0.0, 1.0])
