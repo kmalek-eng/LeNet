@@ -19,46 +19,17 @@ The general process is:
 
 ### Training
 
-Contains Python implementations for model training, evaluation, and weight export.
+Python training, evaluation, and weight-export files are maintained in a separate repository:
 
-#### LeNet_MNIST_Training
+**Python-Training-for-Unity-AR**
 
-LeNet-5 implementation for handwritten digit classification using the MNIST dataset.
+https://github.com/kmalek-eng/Python-Training-for-Unity-AR
 
-Includes:
+This repository contains the training pipelines for:
 
-- Training and testing
-- Accuracy evaluation
-- Confusion matrix and ROC analysis
-- Export of trained weights to C#
-- Export of sample images for verification in Unity
-
-#### Crack_Detection_Training
-
-Binary crack classification models based on the ImmerseNet architecture.
-
-Includes:
-
-- Dataset preprocessing
-- Model training and evaluation
-- Weight export to C#
-- A lightweight 32×32 implementation for faster development and deployment
-- A larger 227×227 implementation for higher-capacity training
-
-#### Crack_Segmentation
-
-U-Net based crack segmentation framework.
-
-Includes:
-
-- Training using image-mask pairs
-- Cross-validation
-- Model evaluation
-- Segmentation result generation
-- Checkpoint generation
-- Conversion of trained weights into a C#-Unity compatible format for AR deployment
-
-Each training folder contains its own README describing dataset structure, execution steps, and generated outputs.
+* LeNet-5 MNIST classification
+* Crack classification
+* Crack segmentation
 
 ### LeNetAR
 
@@ -66,40 +37,29 @@ Unity implementation of the LeNet-5 MNIST classifier for Microsoft HoloLens and 
 
 The project is developed using:
 
-- Unity
-- C#
-- UnityEngine
-- Universal Windows Platform (UWP)
+* Unity
+* C#
+* UnityEngine
+* Universal Windows Platform (UWP)
 
 The same deployment approach can be applied to the crack classification and crack segmentation models after exporting their trained weights to C# format.
 
 ## Requirements
 
-### Training
-
-- Python 3
-- PyTorch
-- NumPy
-- scikit-learn
-- OpenCV
-- Pillow
-
 ### Deployment
 
-- Unity 2019.4.40f1
-- Microsoft HoloLens or HoloLens 2
-- Windows UWP SDK
+* Unity 2019.4.40f1
+* Microsoft HoloLens or HoloLens 2
+* Windows UWP SDK
 
 ## Setup
 
 Clone the repository:
 
 ```bash
-git clone https://github.com/KaMa85/LeNet.git
-cd LeNet
+git clone https://github.com/kmalek-eng/LeNetAR.git
+cd LeNetAR
 ```
-
-Refer to the README inside each training folder for dataset requirements and execution instructions.
 
 To open the AR application:
 
@@ -109,22 +69,30 @@ To open the AR application:
 4. Set the build target to UWP.
 5. Build and deploy to HoloLens.
 
+## Usage
+
+Once deployed, the application will:
+
+* Recognize handwritten digits through the AR headset.
+* Display the recognition results in real-time within the AR environment.
+
 ## Citation
 
-If you use this code, please cite:
+If you use this code, please cite the author:
 
 Kaveh Malek
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Acknowledgments
 
-- Unity Technologies
-- Microsoft HoloLens
-- MNIST Dataset
-- Amr Kassaem for enabling built-in voice recognition commands
+* Unity Technologies
+* Microsoft HoloLens
+* MNIST Dataset
+* Amr Kassaem for enabling built-in voice recognition commands
+
 
 
 
